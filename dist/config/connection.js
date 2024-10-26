@@ -13,17 +13,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-mongoose_1.default.connect("mongodb://127.0.0.1:27017/studentStatsDB");
-module.exports = mongoose_1.default.connection;
-const db = () => __awaiter(void 0, void 0, void 0, function* () {
+const connectDB = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield mongoose_1.default.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/studentsDB");
-        console.log("Database connected.");
-        return mongoose_1.default.connection;
+        yield mongoose_1.default.connect('mongodb://localhost:27017/socialNetworkDB');
+        console.log('MongoDB connected!');
     }
     catch (error) {
-        console.error("Database connection error:", error);
-        throw new Error("Database connection failed.");
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
     }
 });
-exports.default = db;
+exports.default = connectDB;

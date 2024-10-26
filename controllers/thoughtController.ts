@@ -2,17 +2,18 @@ import { Request, Response } from 'express';
 import { Thought, User } from '../models/index.js';
 
 // GET All Thoughts /thoughts
-export const getThoughts = async (_req: Request, res: Response) => {
+export const getThoughts = async (_req: Request, res: Response): Promise<void> => {
     try {
         const thoughts = await Thought.find();
         res.json(thoughts);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching thoughts:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
 // GET Single Thought by ID /thoughts/:thoughtId
-export const getSingleThought = async (req: Request, res: Response) => {
+export const getSingleThought = async (req: Request, res: Response): Promise<void> => {
     const { thoughtId } = req.params;
     try {
         const thought = await Thought.findById(thoughtId);
@@ -22,14 +23,19 @@ export const getSingleThought = async (req: Request, res: Response) => {
             res.status(404).json({ message: 'Thought not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching single thought:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
 // POST Create Thought /thoughts
-export const createThought = async (req: Request, res: Response) => {
+export const createThought = async (req: Request, res: Response): Promise<void> => {
     const { thoughtText, username } = req.body;
     try {
+        if (!thoughtText || !username) {
+            res.status(400).json({ message: 'Thought text and username are required.' });
+        }
+
         const newThought = await Thought.create({ thoughtText, username });
         
         await User.findOneAndUpdate(
@@ -39,32 +45,35 @@ export const createThought = async (req: Request, res: Response) => {
         );
         res.status(201).json(newThought);
     } catch (error: any) {
+        console.error('Error creating thought:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
 // PUT Update Thought by ID /thoughts/:thoughtId
-export const updateThought = async (req: Request, res: Response) => {
+export const updateThought = async (req: Request, res: Response): Promise<void> => {
     const { thoughtId } = req.params;
+    const updateData = req.body; // Collect update data
     try {
         const thought = await Thought.findOneAndUpdate(
             { _id: thoughtId },
-            { $set: req.body },
+            { $set: updateData },
             { runValidators: true, new: true }
         );
 
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         } else {
             res.json(thought);
         }
     } catch (error: any) {
+        console.error('Error updating thought:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
 // DELETE Thought by ID /thoughts/:thoughtId
-export const deleteThought = async (req: Request, res: Response) => {
+export const deleteThought = async (req: Request, res: Response): Promise<void> => {
     const { thoughtId } = req.params;
     try {
         const thought = await Thought.findOneAndDelete({ _id: thoughtId });
@@ -79,45 +88,52 @@ export const deleteThought = async (req: Request, res: Response) => {
             res.json({ message: 'Thought deleted!' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error deleting thought:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
 // POST Add Reaction to Thought /thoughts/:thoughtId/reactions
-export const addReaction = async (req: Request, res: Response) => {
+export const addReaction = async (req: Request, res: Response): Promise<void> => {
     const { thoughtId } = req.params;
     const { reactionBody, username } = req.body;
     try {
+        if (!reactionBody || !username) {
+            res.status(400).json({ message: 'Reaction body and username are required.' });
+        }
+
         const thought = await Thought.findOneAndUpdate(
             { _id: thoughtId },
             { $addToSet: { reactions: { reactionBody, username } } },
             { new: true }
         );
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         } else {
             res.json(thought);
         }
     } catch (error: any) {
+        console.error('Error adding reaction:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
 // DELETE Reaction from Thought /thoughts/:thoughtId/reactions/:reactionId
-export const deleteReaction = async (req: Request, res: Response) => {
+export const deleteReaction = async (req: Request, res: Response): Promise<void> => {
     const { thoughtId, reactionId } = req.params;
     try {
         const thought = await Thought.findOneAndUpdate(
             { _id: thoughtId },
-            { $pull: { reactions: { reactionId } } },
+            { $pull: { reactions: { _id: reactionId } } }, // Ensure you are pulling the reaction by its object ID
             { new: true }
         );
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         } else {
             res.json(thought);
         }
     } catch (error: any) {
+        console.error('Error deleting reaction:', error);
         res.status(400).json({ message: error.message });
     }
 };

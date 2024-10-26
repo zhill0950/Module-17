@@ -2,23 +2,23 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import User from '../models/User';
 
-//GET All Users /users
-export const getUsers = async (_req: Request, res: Response) => {
+// GET All Users /users
+export const getUsers = async (_req: Request, res: Response): Promise<void> => {
     try {
         const users = await User.find();
         res.json(users);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching users:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-//GET Single User by ID /users/:userId
-export const getSingleUser = async (req: Request, res: Response) => {
+// GET Single User by ID /users/:userId
+export const getSingleUser = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.params;
     try {
-        
         if (!Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            res.status(400).json({ message: 'Invalid user ID' });
         }
 
         const user = await User.findById(userId);
@@ -28,50 +28,58 @@ export const getSingleUser = async (req: Request, res: Response) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching single user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-//POST Create User /users
-export const createUser = async (req: Request, res: Response) => {
+// POST Create User /users
+export const createUser = async (req: Request, res: Response): Promise<void> => {
+    const { username, email } = req.body;
     try {
-        const newUser = await User.create(req.body);
+        if (!username || !email) {
+            res.status(400).json({ message: 'Username and email are required.' });
+        }
+
+        const newUser = await User.create({ username, email });
         res.status(201).json(newUser);
     } catch (error: any) {
+        console.error('Error creating user:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
-//PUT Update User by ID /users/:userId
-export const updateUser = async (req: Request, res: Response) => {
+// PUT Update User by ID /users/:userId
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.params;
+    const updateData = req.body; // Collect update data
     try {
         if (!Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            res.status(400).json({ message: 'Invalid user ID' });
         }
 
         const user = await User.findOneAndUpdate(
             { _id: userId },
-            { $set: req.body },
+            { $set: updateData },
             { runValidators: true, new: true }
         );
         if (!user) {
-            res.status(404).json({ message: 'No user with this id!' });
+            res.status(404).json({ message: 'No user with this ID!' });
         } else {
             res.json(user);
         }
     } catch (error: any) {
+        console.error('Error updating user:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
-//DELETE User by ID /users/:userId
-export const deleteUser = async (req: Request, res: Response) => {
+// DELETE User by ID /users/:userId
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     const { userId } = req.params;
     try {
-        
         if (!Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
+            res.status(400).json({ message: 'Invalid user ID' });
         }
 
         const user = await User.findOneAndDelete({ _id: userId });
@@ -81,17 +89,17 @@ export const deleteUser = async (req: Request, res: Response) => {
             res.json({ message: 'User deleted!' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        console.error('Error deleting user:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-//POST Add Friend /users/:userId/friends/:friendId
-export const addFriend = async (req: Request, res: Response) => {
+// POST Add Friend /users/:userId/friends/:friendId
+export const addFriend = async (req: Request, res: Response): Promise<void> => {
     const { userId, friendId } = req.params;
     try {
-        
         if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(friendId)) {
-            return res.status(400).json({ message: 'Invalid user or friend ID' });
+            res.status(400).json({ message: 'Invalid user or friend ID' });
         }
 
         const user = await User.findOneAndUpdate(
@@ -100,22 +108,22 @@ export const addFriend = async (req: Request, res: Response) => {
             { new: true }
         );
         if (!user) {
-            res.status(404).json({ message: 'No user with this id!' });
+            res.status(404).json({ message: 'No user with this ID!' });
         } else {
             res.json(user);
         }
     } catch (error: any) {
+        console.error('Error adding friend:', error);
         res.status(400).json({ message: error.message });
     }
 };
 
-//DELETE Friend /users/:userId/friends/:friendId
-export const deleteFriend = async (req: Request, res: Response) => {
+// DELETE Friend /users/:userId/friends/:friendId
+export const deleteFriend = async (req: Request, res: Response): Promise<void> => {
     const { userId, friendId } = req.params;
     try {
-        
         if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(friendId)) {
-            return res.status(400).json({ message: 'Invalid user or friend ID' });
+            res.status(400).json({ message: 'Invalid user or friend ID' });
         }
 
         const user = await User.findOneAndUpdate(
@@ -124,11 +132,12 @@ export const deleteFriend = async (req: Request, res: Response) => {
             { new: true }
         );
         if (!user) {
-            res.status(404).json({ message: 'No user with this id!' });
+            res.status(404).json({ message: 'No user with this ID!' });
         } else {
             res.json(user);
         }
     } catch (error: any) {
+        console.error('Error deleting friend:', error);
         res.status(400).json({ message: error.message });
     }
 };

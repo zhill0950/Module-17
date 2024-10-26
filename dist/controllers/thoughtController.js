@@ -18,7 +18,8 @@ const getThoughts = (_req, res) => __awaiter(void 0, void 0, void 0, function* (
         res.json(thoughts);
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching thoughts:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 exports.getThoughts = getThoughts;
@@ -35,7 +36,8 @@ const getSingleThought = (req, res) => __awaiter(void 0, void 0, void 0, functio
         }
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error fetching single thought:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 exports.getSingleThought = getSingleThought;
@@ -43,11 +45,15 @@ exports.getSingleThought = getSingleThought;
 const createThought = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { thoughtText, username } = req.body;
     try {
+        if (!thoughtText || !username) {
+            res.status(400).json({ message: 'Thought text and username are required.' });
+        }
         const newThought = yield index_js_1.Thought.create({ thoughtText, username });
         yield index_js_1.User.findOneAndUpdate({ username }, { $addToSet: { thoughts: newThought._id } }, { new: true });
         res.status(201).json(newThought);
     }
     catch (error) {
+        console.error('Error creating thought:', error);
         res.status(400).json({ message: error.message });
     }
 });
@@ -55,16 +61,18 @@ exports.createThought = createThought;
 // PUT Update Thought by ID /thoughts/:thoughtId
 const updateThought = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { thoughtId } = req.params;
+    const updateData = req.body; // Collect update data
     try {
-        const thought = yield index_js_1.Thought.findOneAndUpdate({ _id: thoughtId }, { $set: req.body }, { runValidators: true, new: true });
+        const thought = yield index_js_1.Thought.findOneAndUpdate({ _id: thoughtId }, { $set: updateData }, { runValidators: true, new: true });
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         }
         else {
             res.json(thought);
         }
     }
     catch (error) {
+        console.error('Error updating thought:', error);
         res.status(400).json({ message: error.message });
     }
 });
@@ -84,7 +92,8 @@ const deleteThought = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
     }
     catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Error deleting thought:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 });
 exports.deleteThought = deleteThought;
@@ -93,15 +102,19 @@ const addReaction = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const { thoughtId } = req.params;
     const { reactionBody, username } = req.body;
     try {
+        if (!reactionBody || !username) {
+            res.status(400).json({ message: 'Reaction body and username are required.' });
+        }
         const thought = yield index_js_1.Thought.findOneAndUpdate({ _id: thoughtId }, { $addToSet: { reactions: { reactionBody, username } } }, { new: true });
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         }
         else {
             res.json(thought);
         }
     }
     catch (error) {
+        console.error('Error adding reaction:', error);
         res.status(400).json({ message: error.message });
     }
 });
@@ -110,15 +123,17 @@ exports.addReaction = addReaction;
 const deleteReaction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { thoughtId, reactionId } = req.params;
     try {
-        const thought = yield index_js_1.Thought.findOneAndUpdate({ _id: thoughtId }, { $pull: { reactions: { reactionId } } }, { new: true });
+        const thought = yield index_js_1.Thought.findOneAndUpdate({ _id: thoughtId }, { $pull: { reactions: { _id: reactionId } } }, // Ensure you are pulling the reaction by its object ID
+        { new: true });
         if (!thought) {
-            res.status(404).json({ message: 'No thought with this id!' });
+            res.status(404).json({ message: 'No thought with this ID!' });
         }
         else {
             res.json(thought);
         }
     }
     catch (error) {
+        console.error('Error deleting reaction:', error);
         res.status(400).json({ message: error.message });
     }
 });

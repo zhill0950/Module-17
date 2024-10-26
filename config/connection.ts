@@ -1,20 +1,13 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-mongoose.connect("mongodb://127.0.0.1:27017/studentStatsDB");
-
-module.exports = mongoose.connection;
-
-const db = async (): Promise<typeof mongoose.connection> => {
-  try {
-    await mongoose.connect(
-      process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/studentsDB"
-    );
-    console.log("Database connected.");
-    return mongoose.connection;
-  } catch (error) {
-    console.error("Database connection error:", error);
-    throw new Error("Database connection failed.");
-  }
+const connectDB = async () => {
+    try {
+        await mongoose.connect('mongodb://localhost:27017/socialNetworkDB');
+        console.log('MongoDB connected!');
+    } catch (error) {
+        console.error('MongoDB connection error:', error);
+        process.exit(1);
+    }
 };
 
-export default db;
+export default connectDB;
