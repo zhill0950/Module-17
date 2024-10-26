@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+      "target": "ES6",                          // ES6 or higher
+      "module": "commonjs",                     // CommonJS for Node.js modules
+      "outDir": "./dist",                       // Output folder for compiled JS files
+      "rootDir": "./",                          // Root directory of source files (can be adjusted to ./src if needed)
+      "strict": true,                           // Enable all strict type-checking options
+      "esModuleInterop": true,                  // Enable interop between CommonJS and ES modules
+      "skipLibCheck": true,                     // Skip type checking of declaration files
+      "forceConsistentCasingInFileNames": true,  // Ensure consistent file casing
+      "resolveJsonModule": true,                // Allow importing JSON files
+      "baseUrl": ".",                           // Base URL for module resolution
+      "paths": {                                // Path mapping for module resolution
+        "*": ["node_modules/*"]
+      }
+    },
+    "include": ["**/*.ts"],                     // Include all TypeScript files in the project
+    "exclude": ["node_modules"]                 // Exclude node_modules from compilation
+  }
+  
