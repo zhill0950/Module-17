@@ -1,40 +1,24 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteFriend = exports.addFriend = exports.deleteUser = exports.updateUser = exports.createUser = exports.getSingleUser = exports.getUsers = void 0;
-const mongoose_1 = require("mongoose");
-const User_1 = __importDefault(require("../models/User"));
+import { Types } from 'mongoose';
+import { User } from '../models/index.js';
 // GET All Users /users
-const getUsers = (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const getUsers = async (_req, res) => {
     try {
-        const users = yield User_1.default.find();
+        const users = await User.find();
         res.json(users);
     }
     catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-});
-exports.getUsers = getUsers;
+};
 // GET Single User by ID /users/:userId
-const getSingleUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const getSingleUser = async (req, res) => {
     const { userId } = req.params;
     try {
-        if (!mongoose_1.Types.ObjectId.isValid(userId)) {
+        if (!Types.ObjectId.isValid(userId)) {
             res.status(400).json({ message: 'Invalid user ID' });
         }
-        const user = yield User_1.default.findById(userId);
+        const user = await User.findById(userId);
         if (user) {
             res.json(user);
         }
@@ -46,33 +30,31 @@ const getSingleUser = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         console.error('Error fetching single user:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-});
-exports.getSingleUser = getSingleUser;
+};
 // POST Create User /users
-const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { username, email } = req.body; // Assuming username and email are required fields
+export const createUser = async (req, res) => {
+    const { username, email } = req.body;
     try {
         if (!username || !email) {
             res.status(400).json({ message: 'Username and email are required.' });
         }
-        const newUser = yield User_1.default.create({ username, email }); // Directly create with destructured object
+        const newUser = await User.create({ username, email });
         res.status(201).json(newUser);
     }
     catch (error) {
         console.error('Error creating user:', error);
         res.status(400).json({ message: error.message });
     }
-});
-exports.createUser = createUser;
+};
 // PUT Update User by ID /users/:userId
-const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const updateUser = async (req, res) => {
     const { userId } = req.params;
     const updateData = req.body; // Collect update data
     try {
-        if (!mongoose_1.Types.ObjectId.isValid(userId)) {
+        if (!Types.ObjectId.isValid(userId)) {
             res.status(400).json({ message: 'Invalid user ID' });
         }
-        const user = yield User_1.default.findOneAndUpdate({ _id: userId }, { $set: updateData }, { runValidators: true, new: true });
+        const user = await User.findOneAndUpdate({ _id: userId }, { $set: updateData }, { runValidators: true, new: true });
         if (!user) {
             res.status(404).json({ message: 'No user with this ID!' });
         }
@@ -84,16 +66,15 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         console.error('Error updating user:', error);
         res.status(400).json({ message: error.message });
     }
-});
-exports.updateUser = updateUser;
+};
 // DELETE User by ID /users/:userId
-const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const deleteUser = async (req, res) => {
     const { userId } = req.params;
     try {
-        if (!mongoose_1.Types.ObjectId.isValid(userId)) {
+        if (!Types.ObjectId.isValid(userId)) {
             res.status(400).json({ message: 'Invalid user ID' });
         }
-        const user = yield User_1.default.findOneAndDelete({ _id: userId });
+        const user = await User.findOneAndDelete({ _id: userId });
         if (!user) {
             res.status(404).json({ message: 'No user with that ID' });
         }
@@ -105,16 +86,15 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         console.error('Error deleting user:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-});
-exports.deleteUser = deleteUser;
+};
 // POST Add Friend /users/:userId/friends/:friendId
-const addFriend = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const addFriend = async (req, res) => {
     const { userId, friendId } = req.params;
     try {
-        if (!mongoose_1.Types.ObjectId.isValid(userId) || !mongoose_1.Types.ObjectId.isValid(friendId)) {
+        if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(friendId)) {
             res.status(400).json({ message: 'Invalid user or friend ID' });
         }
-        const user = yield User_1.default.findOneAndUpdate({ _id: userId }, { $addToSet: { friends: friendId } }, { new: true });
+        const user = await User.findOneAndUpdate({ _id: userId }, { $addToSet: { friends: friendId } }, { new: true });
         if (!user) {
             res.status(404).json({ message: 'No user with this ID!' });
         }
@@ -126,16 +106,15 @@ const addFriend = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         console.error('Error adding friend:', error);
         res.status(400).json({ message: error.message });
     }
-});
-exports.addFriend = addFriend;
+};
 // DELETE Friend /users/:userId/friends/:friendId
-const deleteFriend = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+export const deleteFriend = async (req, res) => {
     const { userId, friendId } = req.params;
     try {
-        if (!mongoose_1.Types.ObjectId.isValid(userId) || !mongoose_1.Types.ObjectId.isValid(friendId)) {
+        if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(friendId)) {
             res.status(400).json({ message: 'Invalid user or friend ID' });
         }
-        const user = yield User_1.default.findOneAndUpdate({ _id: userId }, { $pull: { friends: friendId } }, { new: true });
+        const user = await User.findOneAndUpdate({ _id: userId }, { $pull: { friends: friendId } }, { new: true });
         if (!user) {
             res.status(404).json({ message: 'No user with this ID!' });
         }
@@ -147,5 +126,4 @@ const deleteFriend = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         console.error('Error deleting friend:', error);
         res.status(400).json({ message: error.message });
     }
-});
-exports.deleteFriend = deleteFriend;
+};
