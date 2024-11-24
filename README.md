@@ -52,6 +52,10 @@ Insomnia is a great tool for testing all of the routes in your application. It a
 <a href="https://drive.google.com/file/d/1_SV5B6emGr86oy1QKvNwdE3BU9v8vi3d/view">Video Walkthrough</a> | <a href="zhill0950/Module-17">GitHub Repository</a>
 </p>
 
+## Credits
+
+\*Cameron Barfuss - helped debug
+
 ## Contact
 
 <p align="center">
